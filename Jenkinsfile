@@ -5,6 +5,7 @@ pipeline {
         COMPONENT = 'frontend' 
         appVersion = ''
         ACC_ID = "879381244178"
+        
     }
 
      options {
@@ -41,7 +42,7 @@ pipeline {
         stage('Docker Build') {
             steps {
                script{
-                withAWS(region: 'us-east-1', credentials: 'aws-creds') {
+                withAWS(region: 'us-east-1', credentials: 'aws-creds-dev') {
                     sh """
                     aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com
 
