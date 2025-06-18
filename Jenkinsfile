@@ -12,13 +12,9 @@ pipeline {
         timeout(time: 30, unit: 'MINUTES')
     }
 
-    // parameters{
-    //     string(name: 'PERSON', defaultValue: 'Mr Jenkins', description: 'Who should I say hello to?')
-    //     text(name: 'BIOGRAPHY', defaultValue: '', description: 'Enter some information about the person')
-    //     booleanParam(name: 'TOGGLE', defaultValue: true, description: 'Toggle this value')
-    //     choice(name: 'CHOICE', choices: ['One', 'Two', 'Three'], description: 'Pick something')
-    //     password(name: 'PASSWORD', defaultValue: 'SECRET', description: 'Enter a password')
-    // }
+    parameters{
+        booleanParam(name: 'deploy', defaultValue: false, description: 'Toggle this value')
+    }
     stages {
         stage('Read Version') {
             steps {
@@ -44,18 +40,29 @@ pipeline {
 
         stage('Docker Build') {
             steps {
-               script{ 
-                 withAWS(region: 'us-east-1', credentials: 'aws-creds-dev') {
-                 sh """
+               script{
+                withAWS(region: 'us-east-1', credentials: 'aws-creds') {
+                    sh """
                     aws ecr get-login-password --region us-east-1 | docker login --username AWS --password-stdin ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com
 
                     docker build -t  ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${project}/${component}:${appVersion} .
+
                     docker push ${ACC_ID}.dkr.ecr.us-east-1.amazonaws.com/${project}/${component}:${appVersion}
-                 """
-               }
+                    """
+                }
+                 
                }
             }
         }
+
+        // stage('Trigger Deploy'){
+        //     when { 
+        //         expression { params.deploy }
+        //     }
+        //     steps{
+        //         build job: 'frontend-cd', parameters: [string(name: 'version', value: "${appVersion}")], wait: true
+        //     }
+        // }
 
     }    
     
